@@ -75,7 +75,3 @@ def generate_visualization():
     plt.savefig("part_c_results.png", dpi=300)
     print("Success! Plot saved as 'part_c_results.png'")
     plt.show()
-
-
-if __name__ == "__main__":
-    generate_visualization()
