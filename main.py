@@ -1,6 +1,7 @@
 import sys
 
 import torch
+from visualization import generate_visualization
 
 SEED = 42
 
@@ -30,8 +31,8 @@ def simulate(n_players, start, bet, p_win, max_rounds):
 
     return history_t
 
-def statistical_analysis(history_t, n_players, bet, p_win,check_rounds = [100, 500, 1000] ):
 
+def statistical_analysis(history_t, n_players, bet, p_win, check_rounds=[100, 500, 1000]):
 
     p_lose = 1 - p_win
     starting_bankroll = history_t[:, 0].mean().item()
@@ -43,25 +44,54 @@ def statistical_analysis(history_t, n_players, bet, p_win,check_rounds = [100, 5
     difference = average - ev_theory
     print(f"Average: {average:.2f}")
     print(f"Estimated Theoretical Value: {ev_theory:.2f}")
-    print(f"Difference: {difference :.2f}")
+    print(f"Difference: {difference:.2f}")
 
     for n in (check_rounds):
 
         eliminated_players = (history_t[:, n] == 0).sum().item()
-        eliminated_players_percentage = (eliminated_players / n_players ) * 100
+        eliminated_players_percentage = (eliminated_players / n_players) * 100
 
         print(f"Round {n}: {eliminated_players_percentage:.2f}% eliminated")
 
     final_bankroll = history_t[:, -1]
-    players_above_bankroll = (final_bankroll > starting_bankroll).sum().item()  
-    players_above_bankroll_percentage = (players_above_bankroll / n_players) * 100
-    print(f"Players with bankroll above starting bankroll: {players_above_bankroll_percentage:.2f}%")
-
+    players_above_bankroll = (final_bankroll > starting_bankroll).sum().item()
+    players_above_bankroll_percentage = (
+        players_above_bankroll / n_players) * 100
+    print(
+        f"Players with bankroll above starting bankroll: {players_above_bankroll_percentage:.2f}%")
 
     return history_t
 
 
+def statistical_analysis(history_t, n_players, bet, p_win, check_rounds=[100, 500, 1000]):
 
+    p_lose = 1 - p_win
+    starting_bankroll = history_t[:, 0].mean().item()
+    ev_theory = (p_win * bet) + (p_lose * -bet)
+    active_players = history_t[:, :-1] > 0
+    changes = torch.diff(history_t, dim=1)
+    new_changes = changes[active_players]
+    average = new_changes.mean().item()
+    difference = average - ev_theory
+    print(f"Average: {average:.2f}")
+    print(f"Estimated Theoretical Value: {ev_theory:.2f}")
+    print(f"Difference: {difference:.2f}")
+
+    for n in (check_rounds):
+
+        eliminated_players = (history_t[:, n] == 0).sum().item()
+        eliminated_players_percentage = (eliminated_players / n_players) * 100
+
+        print(f"Round {n}: {eliminated_players_percentage:.2f}% eliminated")
+
+    final_bankroll = history_t[:, -1]
+    players_above_bankroll = (final_bankroll > starting_bankroll).sum().item()
+    players_above_bankroll_percentage = (
+        players_above_bankroll / n_players) * 100
+    print(
+        f"Players with bankroll above starting bankroll: {players_above_bankroll_percentage:.2f}%")
+
+    return history_t
 
 
 def main():
@@ -73,15 +103,18 @@ def main():
     fair_p_win = 0.5
 
     print("Unfair Game Analysis:")
-    history = simulate(players, starting_bankroll, bet, p_win, max_rounds)
-    statistical_analysis(history, players, bet, p_win, check_rounds=[100, 500, 1000])
+    history_roulette = simulate(
+        players, starting_bankroll, bet, p_win, max_rounds)
+    history_fair = simulate(players, starting_bankroll,
+                            bet, fair_p_win, max_rounds)
+    statistical_analysis(history_roulette, players, bet, p_win,
+                         check_rounds=[100, 500, 1000])
     print("\nFair Game Analysis:")
-    fair_history = simulate(players, starting_bankroll, bet, fair_p_win, max_rounds)
-    fair_history = statistical_analysis(fair_history, players, bet, fair_p_win, check_rounds=[100, 500, 1000])
-    print("\n Unfair Game Tensors.")
-    print(history)
-    print("\n Fair Game Tensors.")
-    print(fair_history)
+    fair_history = simulate(players, starting_bankroll,
+                            bet, fair_p_win, max_rounds)
+    fair_history = statistical_analysis(
+        fair_history, players, bet, fair_p_win, check_rounds=[100, 500, 1000])
+    generate_visualization(history_roulette, history_fair)
     return 0
 
 
