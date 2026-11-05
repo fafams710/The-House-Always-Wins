@@ -24,7 +24,9 @@ def simulate(n_players, start, bet, p_win, max_rounds):
 
         win_t = active_player_t & (gamble_t < p_win)
 
-        winnings_t = torch.where(win_t, bet, -bet)
+        bet_t = torch.where(win_t, bet, -bet)
+
+        winnings_t = torch.where(active_player_t, bet_t, 0)
 
         bankroll_t += winnings_t
 
