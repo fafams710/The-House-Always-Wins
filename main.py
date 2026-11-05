@@ -5,10 +5,6 @@ import torch
 SEED = 42
 
 
-def init_params():
-    ...
-
-
 def simulate(n_players, start, bet, p_win, max_rounds):
     torch.manual_seed(SEED)
 
