@@ -22,6 +22,14 @@ def simulate(n_players, start, bet, p_win, max_rounds):
 
         win_t = gamble_t < p_win
 
+        winnings_t = torch.where(win_t, bet, -bet)
+
+        bankroll_t += winnings_t
+
+        history_t[:, r + 1] = bankroll_t
+
+    return history_t
+
 
 def main():
     players = 10000
@@ -31,6 +39,8 @@ def main():
     max_rounds = 1000
 
     history = simulate(players, starting_bankroll, bet, p_win, max_rounds)
+
+    print(history)
 
     return 0
 
